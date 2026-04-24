@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Crompressor WASM Demo</title>
+</head>
+<body>
+  <h1>Crompressor WASM</h1>
+  <p>Motor de compressão rodando no navegador via WebAssembly.</p>
+  <pre id="output">Carregando...</pre>
+  <script src="wasm_exec.js"></script>
+  <script>
+    const go = new Go();
+    WebAssembly.instantiateStreaming(fetch("crompressor.wasm"), go.importObject)
+      .then(result => {
+        go.run(result.instance);
+        document.getElementById("output").textContent = cromInfo();
+      });
+  </script>
+</body>
+</html>

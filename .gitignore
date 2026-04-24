@@ -1,0 +1,8 @@
+/bin/
+*.wasm
+*.exe
+.go-tmp/
+.idea/
+.vscode/
+.gemini/
+.DS_Store
