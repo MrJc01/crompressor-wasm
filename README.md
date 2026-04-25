@@ -1,60 +1,50 @@
-# Crompressor WASM
+# 🌐 Crompressor WASM
 
-> Motor de compressão [Crompressor](https://github.com/MrJc01/crompressor) compilado para WebAssembly — roda no navegador.
+WebAssembly build of the [Crompressor](https://github.com/MrJc01/crompressor) compression engine.
 
----
+## Overview
 
-## O que é?
+This module compiles the full CROM engine to WebAssembly, enabling browser-based compression and decompression without any server-side processing.
 
-O **Crompressor WASM** permite executar o motor de compressão CROM diretamente no navegador,
-sem servidor backend. Ideal para demos, playgrounds e integração com aplicações web.
+## JavaScript API
 
-### Funcionalidades
+```javascript
+// Load WASM module (requires wasm_exec.js from Go distribution)
+const go = new Go();
+const result = await WebAssembly.instantiateStreaming(
+  fetch("crompressor.wasm"), go.importObject
+);
+go.run(result.instance);
 
-- `cromPack()` — Comprimir dados no navegador
-- `cromUnpack()` — Descomprimir dados no navegador
-- `cromInfo()` — Informações do motor
+// Compress data
+const packed = cromPack(inputBytes, codebookBytes, "archive");
+// packed.data    → Uint8Array (.crom bytes)
+// packed.metrics → {originalSize, packedSize, hitRate, entropy, ...}
 
----
+// Decompress data
+const original = cromUnpack(packed.data, codebookBytes);
+// original.data → Uint8Array (restored bytes)
+// original.size → number
 
-## Build
+// Analyze entropy
+const analysis = cromAnalyze(dataBytes);
+// JSON: {entropy, size, classification, isHighEntropy}
+
+// Version info
+cromInfo(); // → "crompressor-wasm v0.2.0"
+```
+
+## Building
 
 ```bash
-make build    # Compila para WASM
-make serve    # Inicia servidor local em :8080
-make clean    # Remove artefatos
+GOOS=js GOARCH=wasm go build -o crompressor.wasm ./cmd/wasm/
 ```
 
-**Pré-requisitos:** Go 1.22+ com suporte a `GOOS=js GOARCH=wasm`.
+## Requirements
 
----
+- Go 1.25+
+- Local checkout of [crompressor](https://github.com/MrJc01/crompressor) (sibling directory)
 
-## Arquitetura
+## License
 
-```
-crompressor-wasm/
-├── cmd/wasm/          ← Entrypoint WASM (main.go)
-├── www/               ← Demo HTML + wasm_exec.js
-│   ├── index.html
-│   ├── crompressor.wasm  (gerado)
-│   └── wasm_exec.js      (gerado)
-├── go.mod
-├── Makefile
-└── README.md
-```
-
----
-
-## Ecossistema
-
-| Repositório | Papel |
-|-------------|-------|
-| [crompressor](https://github.com/MrJc01/crompressor) | Motor core |
-| [crompressor-wasm](https://github.com/MrJc01/crompressor-wasm) | WebAssembly (este repo) |
-| [crompressor-gui](https://github.com/MrJc01/crompressor-gui) | Interface gráfica nativa |
-
----
-
-## Licença
-
-MIT — veja [LICENSE](LICENSE).
+MIT

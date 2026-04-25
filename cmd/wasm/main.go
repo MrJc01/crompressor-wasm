@@ -74,10 +74,30 @@ func pack(this js.Value, args []js.Value) interface{} {
 	return result
 }
 
-// unpack receives (Uint8Array packed, Uint8Array codebook) from JS.
-// NOTE: Full in-memory unpack will be wired in a future iteration.
+// unpack receives (Uint8Array packed, Uint8Array codebook) from JS
+// and returns the reconstructed original bytes as a Uint8Array.
 func unpack(this js.Value, args []js.Value) interface{} {
-	return jsError("cromUnpack: in-memory unpack not yet implemented — use Pack roundtrip via CLI")
+	if len(args) < 2 {
+		return jsError("cromUnpack: requires 2 arguments (cromData, codebook)")
+	}
+
+	cromData := jsToBytes(args[0])
+	codebookData := jsToBytes(args[1])
+
+	opts := cromlib.DefaultUnpackOptions()
+
+	original, err := cromlib.UnpackBytes(cromData, codebookData, opts)
+	if err != nil {
+		return jsError(fmt.Sprintf("cromUnpack: %v", err))
+	}
+
+	result := js.Global().Get("Object").New()
+	dataArray := js.Global().Get("Uint8Array").New(len(original))
+	js.CopyBytesToJS(dataArray, original)
+	result.Set("data", dataArray)
+	result.Set("size", len(original))
+
+	return result
 }
 
 // analyze receives a Uint8Array and returns entropy analysis as a JSON string.
